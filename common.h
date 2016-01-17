@@ -1,0 +1,10 @@
+#pragma once
+
+#define MAX_NUM_ARGVS 50
+
+// Command line arguments
+extern int32 com_argc;
+extern uint8* com_largv[MAX_NUM_ARGVS + 1];
+
+// Functions
+int32 COM_CheckParm(uint8* parm);
