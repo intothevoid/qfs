@@ -1,5 +1,44 @@
 #include "quakedef.h"
 
+// Copy strings
+void Q_strcpy(uint8* dst, const uint8* src) 
+{
+	while (*src)
+		*dst++ = *src++;
+
+	*dst = '\0';
+}
+
+// Copy strings, with size
+void Q_strncpy(uint8* dst, const uint8* src, int32 len) 
+{
+	if (len < 0)
+		return;
+
+	while (*src && len)
+	{
+		*dst++ = *src++;
+		--len;
+	}
+
+	while (len)
+	{
+		*dst = '\0';
+		--len;
+	}
+}
+
+// Length of a string
+int32 Q_strlen(uint8* str)
+{
+	int32 len = 0;
+
+	while (str[len])
+		++len;
+
+	return len;
+}
+
 // Compare two strings
 // Return 0 if equal, -1 if s1 < s2 else 1
 int32 Q_strcmp(uint8* s1, uint8* s2)
