@@ -1,7 +1,7 @@
 #include "quakedef.h"
 
 // Copy strings
-void Q_strcpy(uint8* dst, const uint8* src) 
+void Q_strcpy(char* dst, const char* src) 
 {
 	while (*src)
 		*dst++ = *src++;
@@ -10,7 +10,7 @@ void Q_strcpy(uint8* dst, const uint8* src)
 }
 
 // Copy strings, with size
-void Q_strncpy(uint8* dst, const uint8* src, int32 len) 
+void Q_strncpy(char* dst, const char* src, int32 len) 
 {
 	if (len < 0)
 		return;
@@ -29,7 +29,7 @@ void Q_strncpy(uint8* dst, const uint8* src, int32 len)
 }
 
 // Length of a string
-int32 Q_strlen(uint8* str)
+int32 Q_strlen(char* str)
 {
 	int32 len = 0;
 
@@ -41,7 +41,7 @@ int32 Q_strlen(uint8* str)
 
 // Compare two strings
 // Return 0 if equal, -1 if s1 < s2 else 1
-int32 Q_strcmp(uint8* s1, uint8* s2)
+int32 Q_strcmp(const char* s1, const char* s2)
 {
 	while (*s1 == *s2)
 	{
@@ -57,7 +57,7 @@ int32 Q_strcmp(uint8* s1, uint8* s2)
 
 // Convert string to its integer value
 // Support hexadecimal
-int32 Q_atoi(int8* str)
+int32 Q_atoi(const char* str)
 {
 	int32 sign = 1;
 	int32 val = 0;
