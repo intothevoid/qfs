@@ -1,4 +1,5 @@
 #include <Windows.h>
+#include "host.h"
 
 static BOOL IsRunning = TRUE;
 
@@ -94,7 +95,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	mainWindow = CreateWindowEx(
 		0,
 		"Module 2",
-		"Lesson 2.4",
+		"Lesson 2.5",
 		WindowStyle,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -112,8 +113,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	PatBlt(DeviceContext, 0, 0, 800, 600, BLACKNESS);
 	ReleaseDC(mainWindow, DeviceContext);
 
+	Host_Init();
+
 	// Initialize time
-	float timecount = Sys_InitFloatTime();
+	float oldtime = Sys_InitFloatTime();
 
 	MSG msg;
 	while (IsRunning)
@@ -130,11 +133,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		// Update game
 		// Draw graphics
-
-		char buf[64] = { 0 };
-		sprintf_s(buf, 64, "Total Time: %3.7f \n", newtime);
-		OutputDebugString(buf);
+		Host_Frame(newtime - oldtime);
+		oldtime = newtime;
 	}
+
+	Host_Shutdown();
+
 	return 0;
 }
 
