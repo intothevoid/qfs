@@ -117,6 +117,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// Initialize time
 	float oldtime = Sys_InitFloatTime();
+	float TargetTime = 1.0f / 60.0f; // 60 fps is ideal
+	float TimeAccumulated = 0;
 
 	MSG msg;
 	while (IsRunning)
@@ -130,11 +132,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		// Get the elapsed time
 		float newtime = Sys_FloatTime();
-
-		// Update game
-		// Draw graphics
-		Host_Frame(newtime - oldtime);
+		TimeAccumulated += newtime - oldtime;
 		oldtime = newtime;
+
+		if (TimeAccumulated > TargetTime)
+		{
+			// Update game
+			Host_Frame(TargetTime);
+			TimeAccumulated -= TargetTime;
+		}
 	}
 
 	Host_Shutdown();
