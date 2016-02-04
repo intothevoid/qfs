@@ -1,5 +1,7 @@
 #pragma once
 
+typedef enum { true, false } qboolean;
+
 #define MAX_NUM_ARGVS 50
 
 // Command line arguments
