@@ -14,8 +14,12 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 	switch (uMsg)
 	{
-		case WM_KEYUP:
+		case WM_DESTROY:
 			Running = 0;
+			break;
+
+		case WM_KEYUP:
+			//Running = 0;
 			break;
 		
 		default:
@@ -43,6 +47,28 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 	DWORD dwExStyle = 0;
 	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
 
+	BOOL FullScreen = TRUE;
+
+	if (FullScreen)
+	{
+		DEVMODE dmScreenSettings = { 0 };
+		dmScreenSettings.dmSize = sizeof(dmScreenSettings);
+		dmScreenSettings.dmPelsWidth = BufferWidth;
+		dmScreenSettings.dmPelsHeight = BufferHeight;
+		dmScreenSettings.dmBitsPerPel = 32;
+		dmScreenSettings.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+
+		if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL)
+		{
+			dwExStyle = WS_EX_APPWINDOW;
+			dwStyle = WS_POPUP;
+		}
+		else
+		{
+			FullScreen = FALSE;
+		}
+	}
+
 	RECT r = { 0 };
 	r.right = BufferWidth;
 	r.bottom = BufferHeight;
@@ -62,6 +88,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 		NULL,
 		hInstance,
 		0);
+
+	if (FullScreen)
+		SetWindowLong(MainWindow, GWL_STYLE, 0);
 
 	ShowWindow(MainWindow, nShowCmd);
 
@@ -84,23 +113,30 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 			DispatchMessage(&msg);
 		}
 
-		int* MemowryWalker = (int*)BackBuffer;
+		int* MemoryWalker = (int*)BackBuffer;
 
 		for (int Height = 0; Height < BufferHeight; Height++)
 		{
 			for (int  Width = 0; Width < BufferWidth; Width++)
 			{
-				char Red = 0xFF;
-				char Green = 0;
-				char Blue = 0;
+				char Red = rand() % 256;
+				char Green = rand() % 256;
+				char Blue = rand() % 256;
 
-				*MemowryWalker++ = ((Red << 16) | (Green << 8) | Blue);
+				*MemoryWalker++ = ((Red << 16) | (Green << 8) | Blue);
 			}
 		}
+
+		HDC dc = GetDC(MainWindow);
+
+		StretchDIBits(dc,
+			0, 0, BufferWidth, BufferHeight,
+			0, 0, BufferWidth, BufferHeight,
+			BackBuffer, &BitMapInfo,
+			DIB_RGB_COLORS, SRCCOPY);
+
+		DeleteDC(dc);
 	}
-
-
-	
 
 	return EXIT_SUCCESS;
 }
