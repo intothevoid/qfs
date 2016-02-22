@@ -1,4 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Windows.h>
+#include <stdio.h>
 
 int BufferWidth = 640;
 int BufferHeight = 480;
@@ -14,6 +17,43 @@ typedef struct
 }dibinfo_t;
 
 dibinfo_t BitMapInfo = { 0 };
+
+// Function to draw 8 bit picture
+void DrawPic8(int X, int Y, int Width, int Height, unsigned char* Source, unsigned char* Dest)
+{
+	if (X < 0)
+		X = 0;
+
+	if (Y < 0)
+		Y = 0;
+
+	if ((X + Width) > BufferWidth)
+	{
+		Width = BufferWidth - X;
+	}
+
+	if ((Y + Height) > BufferHeight)
+	{
+		Height = BufferHeight - Y;
+	}
+
+	// move to the first pixel
+	Dest += (BufferWidth * BytesPerPixel * Y) + (X * BytesPerPixel);
+
+	unsigned char* BufferWalker = Dest;
+
+	for (int HeightWalker = 0; HeightWalker < Height; HeightWalker++)
+	{
+		for (int WidthWalker = 0; WidthWalker < Width; WidthWalker++)
+		{
+			*BufferWalker++ = *Source++;
+		}
+
+		Dest += BufferWidth * BytesPerPixel;
+		BufferWalker = Dest;
+	}
+
+}
 
 // 32 bit version of DrawRect
 void DrawRect32(int X, int Y, int Width, int Height, unsigned char Red, unsigned char Green, unsigned char Blue, unsigned char* Buffer)
@@ -158,7 +198,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 	HWND MainWindow = CreateWindowEx(
 		dwExStyle,
 		"Module3",
-		"Lesson 3.3",
+		"Lesson 3.4",
 		dwStyle,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -186,17 +226,44 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 
 	if (BytesPerPixel == 1)
 	{
-		BitMapInfo.acolors[0].rgbRed = 0;
-		BitMapInfo.acolors[0].rgbGreen = 0;
-		BitMapInfo.acolors[0].rgbBlue = 0;
+		FILE* Palette = fopen("palette.lmp", "r");
+		void* RawData = malloc(256 * 3); // 256 color palette * 3 (R,G,B)
+		unsigned char* PaletteData = RawData;
+		size_t Ret = fread(PaletteData, 1, 256 * 3, Palette);
 
-		for (int i = 1; i < 256; i++)
+		for (int i = 0; i < 256; i++)
 		{
-			BitMapInfo.acolors[i].rgbRed = rand() % 256;
-			BitMapInfo.acolors[i].rgbGreen = rand() % 256;
-			BitMapInfo.acolors[i].rgbBlue = rand() % 256;
+			BitMapInfo.acolors[i].rgbRed = *PaletteData++;
+			BitMapInfo.acolors[i].rgbGreen = *PaletteData++;
+			BitMapInfo.acolors[i].rgbBlue = *PaletteData++;
 		}
+
+		free(RawData);
+		fclose(Palette);
 	}
+
+	FILE* Disc = fopen("DISC.lmp", "r");
+	int DiscHeight, DiscWidth;
+
+	size_t RetVal = fread(&DiscWidth, 1, 4, Disc);
+	RetVal = fread(&DiscHeight, 1, 4, Disc);
+
+	void* DiscData = malloc(DiscWidth * DiscHeight);
+	RetVal = fread(DiscData, 1, DiscWidth * DiscHeight, Disc);
+
+	fclose(Disc); // Close file
+
+	FILE* Pause = fopen("pause.lmp", "r"); 
+	int PauseHeight, PauseWidth;
+
+	RetVal = fread(&PauseWidth, 1, 4, Pause);
+	RetVal = fread(&PauseHeight, 1, 4, Pause);
+
+	void* PauseData = malloc(PauseWidth * PauseHeight);
+	RetVal = fread(PauseData, 1, PauseWidth * PauseHeight, Pause);
+
+	fclose(Pause); // Close file
+
 
 	MSG msg;
 	while (Running)
@@ -237,7 +304,10 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 					*MemoryWalker++ = rand() % 256;
 				}
 			}
-			DrawRect8(10, 10, 300, 150, 1, BackBuffer);
+			
+			DrawPic8(100, 100, DiscWidth, DiscHeight, DiscData, BackBuffer);
+			DrawPic8(100, 200, PauseWidth, PauseHeight, PauseData, BackBuffer);
+			// DrawRect8(10, 10, 300, 150, 1, BackBuffer);
 		}
 
 		HDC dc = GetDC(MainWindow);
@@ -250,6 +320,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 
 		DeleteDC(dc);
 	}
+
+	// Free buffers
+	free(BackBuffer);
+	free(DiscData);
+	free(PauseData);
 
 	return EXIT_SUCCESS;
 }
