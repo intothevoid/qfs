@@ -5,8 +5,10 @@
 
 int BufferWidth = 640;
 int BufferHeight = 480;
+int WindowWidth = 640;
+int WindowHeight = 480;
 int Running = 1;
-int BytesPerPixel = 1;
+int BytesPerPixel = 1; 
 void* BackBuffer;
 
 
@@ -53,6 +55,45 @@ void DrawPic8(int X, int Y, int Width, int Height, unsigned char* Source, unsign
 		BufferWalker = Dest;
 	}
 
+}
+
+// Function to draw 32 bit picture
+void DrawPic32(int X, int Y, int Width, int Height, unsigned char* Source, unsigned char* Dest)
+{
+	if (X < 0)
+		X = 0;
+
+	if (Y < 0)
+		Y = 0;
+
+	if ((X + Width) > BufferWidth)
+	{
+		Width = BufferWidth - X;
+	}
+
+	if ((Y + Height) > BufferHeight)
+	{
+		Height = BufferHeight - Y;
+	}
+
+	// move to the first pixel
+	Dest += (BufferWidth * BytesPerPixel * Y) + (X * BytesPerPixel);
+
+	unsigned int* BufferWalker = (unsigned int*)Dest;
+
+	for (int HeightWalker = 0; HeightWalker < Height; HeightWalker++)
+	{
+		for (int WidthWalker = 0; WidthWalker < Width; WidthWalker++)
+		{
+			int *ColorValue = (int *)&BitMapInfo.acolors[*Source];
+
+			*BufferWalker++ = *ColorValue; // Increment BufferWalker by 4 bytes
+			Source++; // Increment Source by 1 byte
+		}
+
+		Dest += BufferWidth * BytesPerPixel;
+		BufferWalker = (unsigned int*)Dest;
+	}
 }
 
 // 32 bit version of DrawRect
@@ -167,7 +208,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 	DWORD dwExStyle = 0;
 	DWORD dwStyle = WS_OVERLAPPEDWINDOW;
 
-	BOOL FullScreen = FALSE;
+	/*BOOL FullScreen = FALSE;
 
 	if (FullScreen)
 	{
@@ -187,11 +228,11 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 		{
 			FullScreen = FALSE;
 		}
-	}
+	}*/
 
 	RECT r = { 0 };
-	r.right = BufferWidth;
-	r.bottom = BufferHeight;
+	r.right = WindowWidth;
+	r.bottom = WindowHeight;
 	AdjustWindowRectEx(&r, dwStyle, 0, dwExStyle);
 
 	// Create Window
@@ -209,8 +250,8 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 		hInstance,
 		0);
 
-	if (FullScreen)
-		SetWindowLong(MainWindow, GWL_STYLE, 0);
+	//if (FullScreen)
+	//	SetWindowLong(MainWindow, GWL_STYLE, 0);
 
 	ShowWindow(MainWindow, nShowCmd);
 
@@ -224,7 +265,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 
 	BackBuffer = malloc(BufferWidth * BufferHeight * BytesPerPixel); 
 
-	if (BytesPerPixel == 1)
+	//if (BytesPerPixel == 1)
 	{
 		FILE* Palette = fopen("palette.lmp", "r");
 		void* RawData = malloc(256 * 3); // 256 color palette * 3 (R,G,B)
@@ -290,7 +331,9 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 					*MemoryWalker++ = ((Red << 16) | (Green << 8) | Blue);
 				}
 			}
-			DrawRect32(10, 10, 300, 150, 255, 0, 255, BackBuffer);
+			DrawPic32(10, 10, DiscWidth, DiscHeight, DiscData, BackBuffer);
+			DrawPic32(100, 100, PauseWidth, PauseHeight, PauseData, BackBuffer);
+			//DrawRect32(10, 10, 300, 150, 255, 0, 255, BackBuffer);
 		}
 		else
 		{
@@ -305,15 +348,15 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 				}
 			}
 			
-			DrawPic8(100, 100, DiscWidth, DiscHeight, DiscData, BackBuffer);
-			DrawPic8(100, 200, PauseWidth, PauseHeight, PauseData, BackBuffer);
+			DrawPic8(10, 10, DiscWidth, DiscHeight, DiscData, BackBuffer);
+			DrawPic8(100, 100, PauseWidth, PauseHeight, PauseData, BackBuffer);
 			// DrawRect8(10, 10, 300, 150, 1, BackBuffer);
 		}
 
 		HDC dc = GetDC(MainWindow);
 
 		StretchDIBits(dc,
-			0, 0, BufferWidth, BufferHeight,
+			0, 0, WindowWidth, WindowHeight,
 			0, 0, BufferWidth, BufferHeight,
 			BackBuffer, (BITMAPINFO *)&BitMapInfo,
 			DIB_RGB_COLORS, SRCCOPY);
