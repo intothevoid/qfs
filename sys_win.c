@@ -5,84 +5,81 @@ static BOOL IsRunning = TRUE;
 
 HINSTANCE GlobalInstance;
 
-////////////////////////////////////////////////////////
-//			TIMER CODE
-////////////////////////////////////////////////////////
+//////////////////////////////
+//      TIMER CODE
+//////////////////////////////
+
 static double GTimePassed = 0;
 static double SecondsPerTick = 0;
 static __int64 GTimeCount = 0;
 
-float Sys_InitFloatTime()
+float Sys_InitFloatTime(void)
 {
-	LARGE_INTEGER Frequency;
-	QueryPerformanceFrequency(&Frequency);
+    LARGE_INTEGER Frequency;
+    QueryPerformanceFrequency(&Frequency);
 
-	SecondsPerTick = 1 / (double)Frequency.QuadPart;
+    SecondsPerTick = 1.0 / (double)Frequency.QuadPart;
 
-	LARGE_INTEGER Counter;
-	QueryPerformanceCounter(&Counter);
+    LARGE_INTEGER Counter;
+    QueryPerformanceCounter(&Counter);
 
-	GTimeCount = Counter.QuadPart;
-	return 0;
+    GTimeCount = Counter.QuadPart;
+
+    return 0;
 }
 
-float Sys_FloatTime()
+float Sys_FloatTime(void)
 {
-	LARGE_INTEGER Counter;
-	QueryPerformanceCounter(&Counter);
+    LARGE_INTEGER Counter;
+    QueryPerformanceCounter(&Counter);
 
-	__int64 interval = Counter.QuadPart - GTimeCount;
-	GTimeCount = Counter.QuadPart;
+    __int64 Interval = Counter.QuadPart - GTimeCount;
+    GTimeCount = Counter.QuadPart;
 
-	double SecondsGoneBy = (double)interval * SecondsPerTick; // No. of ticks * seconds per tick
-	GTimePassed += SecondsGoneBy;
+    double SecondsGoneBy = (double)Interval * SecondsPerTick;
+    GTimePassed += SecondsGoneBy;
 
-	return (float)GTimePassed;
+    return (float)GTimePassed;
 }
-////////////////////////////////////////////////////////
-//			TIMER CODE END
-////////////////////////////////////////////////////////
+
+//////////////////////////////
+//      END TIMER CODE
+//////////////////////////////
 
 void Sys_SendKeyEvents(void)
 {
-	MSG msg;
-
-	// Check with OS
-	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
+    MSG msg;
+    // Check in with OS
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
 }
 
-void Sys_Shutdown()
+void Sys_Shutdown(void)
 {
-	IsRunning = FALSE;
+    IsRunning = FALSE;
 }
 
-
-int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCommand)
+int32 WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-	GlobalInstance = hInstance;
+    GlobalInstance = hInstance;
 
-	COM_ParseCmdLine(lpCmdLine);
+    COM_ParseCmdLine(lpCmdLine);
 
-	Host_Init();
+    Host_Init();
 
-	// Initialize time
-	float oldtime = Sys_InitFloatTime();
+    float oldtime = Sys_InitFloatTime();
 
-	while (IsRunning)
-	{
-		// Get the elapsed time
-		float newtime = Sys_FloatTime();
-		Host_Frame(newtime - oldtime);
-		oldtime = newtime;
-	}
+    while (IsRunning)
+    {
+        float newtime = Sys_FloatTime();
+        Host_Frame(newtime - oldtime);
+        oldtime = newtime;
+    }
 
-	Host_Shutdown();
+    Host_Shutdown();
 
-	return 0;
+    return 0;
 }
-
-

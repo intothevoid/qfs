@@ -3,11 +3,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
-// Faster typing
-#define int8 int8_t
-#define int32 int32_t 
-#define uint8 uint8_t 
-#define uint32 uint32_t
+typedef uint8_t uint8;
+typedef int32_t int32;
+typedef uint32_t uint32;
+
 
 #include "common.h"
 #include "q_stl.h"

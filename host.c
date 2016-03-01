@@ -1,40 +1,42 @@
-#include "host.h"
 #include "quakedef.h"
 
 double realtime = 0;
 double oldrealtime = 0;
 double host_frametime = 0;
 
+extern void* BackBuffer;
+
 qboolean Host_FilterTime(float time)
 {
-	realtime += time;
+    realtime += time;
 
-	if (realtime - oldrealtime < 1 / 72.0)
-		return false;
+    if (realtime - oldrealtime < 1.0 / 72.0)
+        return false;
 
-	host_frametime = realtime - oldrealtime;
-	oldrealtime = realtime;
+    host_frametime = realtime - oldrealtime;
+    oldrealtime = realtime;
 
-	return true;
+    return true;
 }
 
 void Host_Init(void)
 {
-	VID_Init();
+    VID_Init();
 }
 
 void Host_Frame(float timestep)
 {
-	if (!Host_FilterTime(timestep))
-		return;
+    if (!Host_FilterTime(timestep))
+        return;
 
-	Sys_SendKeyEvents();
+    Sys_SendKeyEvents();
 
-	// update game
-	// render scene
+    VID_Update();
+    // update game
+    // render scene
 }
 
 void Host_Shutdown(void)
 {
-	VID_Shutdown();
+    VID_Shutdown();
 }
