@@ -239,7 +239,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 	HWND MainWindow = CreateWindowEx(
 		dwExStyle,
 		"Module3",
-		"Lesson 3.4",
+		"Lesson 3.5",
 		dwStyle,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -267,7 +267,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 
 	//if (BytesPerPixel == 1)
 	{
-		FILE* Palette = fopen("palette.lmp", "r");
+		FILE* Palette = fopen("palette.lmp", "rb");
 		void* RawData = malloc(256 * 3); // 256 color palette * 3 (R,G,B)
 		unsigned char* PaletteData = RawData;
 		size_t Ret = fread(PaletteData, 1, 256 * 3, Palette);
@@ -283,7 +283,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 		fclose(Palette);
 	}
 
-	FILE* Disc = fopen("DISC.lmp", "r");
+	FILE* Disc = fopen("DISC.lmp", "rb");
 	int DiscHeight, DiscWidth;
 
 	size_t RetVal = fread(&DiscWidth, 1, 4, Disc);
@@ -294,7 +294,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 
 	fclose(Disc); // Close file
 
-	FILE* Pause = fopen("pause.lmp", "r"); 
+	FILE* Pause = fopen("pause.lmp", "rb"); 
 	int PauseHeight, PauseWidth;
 
 	RetVal = fread(&PauseWidth, 1, 4, Pause);
@@ -361,7 +361,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLI
 			BackBuffer, (BITMAPINFO *)&BitMapInfo,
 			DIB_RGB_COLORS, SRCCOPY);
 
-		DeleteDC(dc);
+		ReleaseDC(MainWindow, dc);
 	}
 
 	// Free buffers

@@ -20,7 +20,7 @@ qboolean Host_FilterTime(float time)
 
 void Host_Init(void)
 {
-
+	VID_Init();
 }
 
 void Host_Frame(float timestep)
@@ -28,11 +28,13 @@ void Host_Frame(float timestep)
 	if (!Host_FilterTime(timestep))
 		return;
 
+	Sys_SendKeyEvents();
+
 	// update game
 	// render scene
 }
 
 void Host_Shutdown(void)
 {
-
+	VID_Shutdown();
 }
